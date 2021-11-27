@@ -1,3 +1,5 @@
+import React from 'react';
+import Head from 'next/head';
 import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
@@ -27,18 +29,27 @@ const useStyles = makeStyles((theme: Theme) =>
 const Main: React.FC = () => {
     const classes = useStyles({});
 
-    return <div className={classes.root}>
-        <img src="/images/logo.png" className={classes.mainImg} />
-        <Typography variant="h1" color="primary" gutterBottom className={classes.mainTitle}>
-            환영합니다
-        </Typography>
-        <Button variant="contained" color="primary" className={classes.btn}>
-            <Link href="/next">회원가입</Link>
-        </Button>
-        <Button variant="contained" color="primary" className={classes.btn}>
-            <Link href="#">로그인</Link>
-        </Button>
-    </div>
+    return <React.Fragment>
+        <Head>
+            <title>Yoon's Nextron with-typescript-material-ui</title>
+        </Head>
+        <div className={classes.root}>
+            <img src="/images/logo.png" className={classes.mainImg} />
+            <Typography variant="h1" color="primary" gutterBottom className={classes.mainTitle}>
+                환영합니다
+            </Typography>
+            <Link href="/members/signup">
+                <Button variant="contained" color="primary" className={classes.btn}>
+                    회원가입
+                </Button>
+            </Link>
+            <Link href="/members/signin">
+                <Button variant="contained" color="primary" className={classes.btn}>
+                    로그인
+                </Button>
+            </Link>
+        </div>
+    </React.Fragment >
 }
 
 export default Main;

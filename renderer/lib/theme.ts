@@ -25,5 +25,6 @@ export const theme = createTheme({
       fontFamily: "TMONTium",
       fontSize: 14,
     }
-  }
+  },
+
 });
