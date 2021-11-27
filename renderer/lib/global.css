@@ -1,0 +1,22 @@
+html,
+body {
+    font-family: TMONBlack, TMONTium, Roboto, sans-serif;
+    font-size: 10px;
+}
+
+a:link {
+    text-decoration: none;
+    color: black;
+}
+
+@font-face {
+    font-family: TMONBlack;
+    font-weight: 200;
+    src: url("/fonts/TMONBlack.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: TMONTium;
+    font-weight: 200;
+    src: url("/fonts/TMONTium.ttf") format("truetype");
+}
