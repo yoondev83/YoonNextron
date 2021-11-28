@@ -48,6 +48,11 @@ const Main: React.FC = () => {
                     로그인
                 </Button>
             </Link>
+            <Link href="/service/chat">
+                <Button variant="contained" color="primary" className={classes.btn}>
+                    채팅
+                </Button>
+            </Link>
         </div>
     </React.Fragment >
 }

@@ -3,8 +3,12 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import useInput from '../hooks/use-input';
-
+import { useState } from 'react';
+import SignUpDialog from '../layout/SignUpDialog';
+import ScaleLoader from "react-spinners/ScaleLoader";
+import { useRouter } from 'next/router';
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
@@ -42,6 +46,10 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const SignInForm: React.FC = props => {
     const classes = useStyles({});
+    const auth = getAuth();
+    const router = useRouter();
+    const [infoWrong, setInfoWrong] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const { value: enteredEmail,
         isValid: isEmailValid,
         valueChangeHandler: emailChangeHandler,
@@ -50,15 +58,39 @@ const SignInForm: React.FC = props => {
         isValid: isPassValid,
         valueChangeHandler: passwordChangeHandler,
         reset: resetPasswordInput } = useInput(value => value.trim() !== "" && value.length > 5);
-    const signInHandler = () => {
+    const signInHandler = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setIsLoading(true);
+        if (!isEmailValid || !isPassValid) {
+            setInfoWrong(true);
+            setIsLoading(false);
+            return;
+        } else {
+            signInWithEmailAndPassword(auth, enteredEmail, enteredPass)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    console.log(userCredential);
+                    console.log("user");
+                    console.log(user.email.split("@")[0]);
+                    console.log(user.getIdToken);
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                });
+        }
         resetEmailInput();
         resetPasswordInput();
+        setIsLoading(false);
+        router.push("/service/chat");
     }
 
     return <Grid container spacing={0} direction="row" alignItems="center" justifyContent="space-around" className={classes.root}>
-        <form noValidate autoComplete="off">
+        <form noValidate autoComplete="off" onSubmit={signInHandler}>
+            {infoWrong === true && <SignUpDialog isInfoWrong={infoWrong} setInfoWrong={setInfoWrong} />}
             <Typography variant={"h2"} className={classes.welcomeMsg}>로그인</Typography>
             <Typography variant={"h5"} color={"secondary"} className={classes.welcomeSubMsg}>가입하신 이메일과 비밀번호로 로그인 부탁드립니다.</Typography>
+            {isLoading && <ScaleLoader color={"white"} />}
             <Grid item xs={12} container spacing={3}>
                 <Grid item xs={12}>
                     <TextField type="email" id="outlined-basic" className={classes.textField} label="이메일" variant="filled"
@@ -71,7 +103,7 @@ const SignInForm: React.FC = props => {
                         InputLabelProps={{ className: classes.textFieldTxt }} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Button variant="contained" onClick={signInHandler} className={classes.formBtn}>
+                    <Button variant="contained" type="submit" className={classes.formBtn}>
                         로그인
                     </Button>
                 </Grid>

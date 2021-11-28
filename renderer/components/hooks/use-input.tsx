@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const useInput = (validateValue: (result: string) => void) => {
+const useInput = (validateValue: any) => {
     const [enteredValue, setEnteredValue] = useState<string>('');
     const valueIsValid = validateValue(enteredValue);
     const valueChangeHandler = (event: any) => {

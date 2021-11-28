@@ -11,8 +11,17 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/free-brands-svg-icons": "^5.15.4",
+    "@fortawesome/free-regular-svg-icons": "^5.15.4",
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@fortawesome/react-fontawesome": "^0.1.16",
+    "@material-ui/icons": "^4.11.2",
+    "clsx": "^1.1.1",
     "electron-serve": "^1.1.0",
-    "electron-store": "^8.0.1"
+    "electron-store": "^8.0.1",
+    "firebase": "^9.5.0",
+    "react-spinners": "^0.11.0"
   },
   "devDependencies": {
     "@material-ui/core": "^4.12.3",

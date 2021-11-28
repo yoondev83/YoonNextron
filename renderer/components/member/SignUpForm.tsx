@@ -4,7 +4,11 @@ import Grid from '@material-ui/core/Grid';
 import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
 import useInput from '../hooks/use-input';
-
+import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import SignUpDialog from '../layout/SignUpDialog';
+import SuccessMsgDialog from '../layout/SuccessMsgDialog';
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
@@ -38,6 +42,10 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const SignUpForm: React.FC = props => {
     const classes = useStyles({});
+    const [isSuccessful, setIsSuccessful] = useState<boolean>(false);
+    const [infoWrong, setInfoWrong] = useState<boolean>(false);
+    const router = useRouter();
+    const auth = getAuth();
     const { value: enteredLastName,
         isValid: isLastNameValid,
         valueChangeHandler: lastNameChangeHandler,
@@ -58,16 +66,38 @@ const SignUpForm: React.FC = props => {
         isValid: isPassConfirmValid,
         valueChangeHandler: passConfirmChangeHandler,
         reset: resetPassConfirmInput } = useInput(value => value.trim() !== "" && value.length > 5);
-    const signInHandler = () => {
-        resetLastNameInput();
-        resetFirstNameInput();
-        resetEmailInput();
-        resetPasswordInput();
-        resetPassConfirmInput();
+    const signInHandler = async (event: React.FormEvent<HTMLFormElement>) => {
+        setIsSuccessful(false);
+        event.preventDefault();
+        if (!isLastNameValid || !isFirstNameValid || !isEmailValid || !isPassValid || (enteredConfirmPass !== enteredPass)) {
+            setInfoWrong(true);
+            return;
+        } else {
+            createUserWithEmailAndPassword(auth, enteredEmail, enteredPass)
+                .then((userCredential) => {
+                    // Signed in 
+                    const user = userCredential.user;
+                    setIsSuccessful(true);
+
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                });
+            resetLastNameInput();
+            resetFirstNameInput();
+            resetEmailInput();
+            resetPasswordInput();
+            resetPassConfirmInput();
+            router.push("/members/signin");
+
+        }
     }
 
     return <Grid container spacing={0} direction="row" alignItems="center" justifyContent="space-around" className={classes.root}>
-        <form noValidate autoComplete="off">
+        <form noValidate autoComplete="off" onSubmit={signInHandler}>
+            {infoWrong === true && <SignUpDialog isInfoWrong={infoWrong} setInfoWrong={setInfoWrong} />}
+            {isSuccessful === true && <SuccessMsgDialog isSuccessful={isSuccessful} setIsSuccessful={setIsSuccessful} />}
             <Typography variant={"h1"} className={classes.welcomeMsg}>모든 서비스가 무료입니다!</Typography>
             <Grid item xs={12} container spacing={3}>
                 <Grid item xs={6}>
@@ -98,7 +128,7 @@ const SignUpForm: React.FC = props => {
                         InputLabelProps={{ className: classes.textFieldTxt }} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Button variant="contained" onClick={signInHandler} className={classes.formBtn}>
+                    <Button variant="contained" type="submit" className={classes.formBtn}>
                         회원가입
                     </Button>
                 </Grid>
