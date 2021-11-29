@@ -9,6 +9,8 @@ import { useRouter } from 'next/router';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import SignUpDialog from '../layout/SignUpDialog';
 import SuccessMsgDialog from '../layout/SuccessMsgDialog';
+import { getDatabase, ref, set } from "firebase/database";
+
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
@@ -46,6 +48,7 @@ const SignUpForm: React.FC = props => {
     const [infoWrong, setInfoWrong] = useState<boolean>(false);
     const router = useRouter();
     const auth = getAuth();
+    const db = getDatabase();
     const { value: enteredLastName,
         isValid: isLastNameValid,
         valueChangeHandler: lastNameChangeHandler,
@@ -74,11 +77,19 @@ const SignUpForm: React.FC = props => {
             return;
         } else {
             createUserWithEmailAndPassword(auth, enteredEmail, enteredPass)
-                .then((userCredential) => {
+                .then(async (userCredential) => {
                     // Signed in 
                     const user = userCredential.user;
+                    const userInfo = {
+                        userEmail: enteredEmail,
+                        name: enteredLastName + enteredFirstName,
+                        uid: user.uid
+                    }
                     setIsSuccessful(true);
-
+                    await set(ref(db, 'members/' + userInfo.uid), {
+                        userEmail: userInfo.userEmail,
+                        name: userInfo.name,
+                    });
                 })
                 .catch((error) => {
                     const errorCode = error.code;

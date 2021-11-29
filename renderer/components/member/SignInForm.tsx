@@ -9,6 +9,9 @@ import { useState } from 'react';
 import SignUpDialog from '../layout/SignUpDialog';
 import ScaleLoader from "react-spinners/ScaleLoader";
 import { useRouter } from 'next/router';
+import { useDispatch } from 'react-redux';
+import { authActions } from '../../store/authSlice';
+import { getDatabase, ref, onValue, } from "firebase/database";
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
@@ -48,8 +51,20 @@ const SignInForm: React.FC = props => {
     const classes = useStyles({});
     const auth = getAuth();
     const router = useRouter();
+    const dispatch = useDispatch();
     const [infoWrong, setInfoWrong] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const db = getDatabase();
+    const starCountRef = ref(db, 'members/');
+    onValue(starCountRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+            const childKey = childSnapshot.key;
+            const childData = childSnapshot.val();
+        });
+    }, {
+        onlyOnce: true
+    });
+
     const { value: enteredEmail,
         isValid: isEmailValid,
         valueChangeHandler: emailChangeHandler,
@@ -68,21 +83,27 @@ const SignInForm: React.FC = props => {
         } else {
             signInWithEmailAndPassword(auth, enteredEmail, enteredPass)
                 .then((userCredential) => {
-                    const user = userCredential.user;
-                    console.log(userCredential);
-                    console.log("user");
-                    console.log(user.email.split("@")[0]);
-                    console.log(user.getIdToken);
+                    const userUid = userCredential.user.uid;
+                    const userEmail = userCredential.user.email;
+                    localStorage.setItem("userToken", userUid);
+                    dispatch(authActions.logIn({
+                        userToken: localStorage.getItem("userToken"),
+                        userEmail: userEmail.split("@")[0],
+                    }));
+                    router.push("/service/chat");
                 })
                 .catch((error) => {
                     const errorCode = error.code;
                     const errorMessage = error.message;
+                    console.log(error);
+                    setInfoWrong(true);
+                    setIsLoading(false);
+                    return;
                 });
         }
         resetEmailInput();
         resetPasswordInput();
         setIsLoading(false);
-        router.push("/service/chat");
     }
 
     return <Grid container spacing={0} direction="row" alignItems="center" justifyContent="space-around" className={classes.root}>

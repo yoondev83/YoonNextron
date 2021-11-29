@@ -3,6 +3,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import clsx from 'clsx';
 import { Typography } from '@material-ui/core';
+import { useState } from 'react';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import { useDispatch } from 'react-redux';
+import { authActions } from '../../store/authSlice';
+import { getAuth, signOut } from "firebase/auth";
+import { useRouter } from 'next/router';
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         contacts: {
@@ -93,9 +100,34 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const ChatList: React.FC = () => {
     const classes = useStyles({});
+    const auth = getAuth();
+    const dispatch = useDispatch();
+    const router = useRouter();
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const barBtnHandler = (event: React.MouseEvent<any>) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const barBtnCloseHandler = () => {
+        setAnchorEl(null);
+    };
+    const logoutBtnHandler = () => {
+        setAnchorEl(null);
+        dispatch(authActions.logOut);
+        localStorage.clear();
+        signOut(auth).then(() => {
+            router.replace("/home");
+        }).catch((error) => {
+            console.log(error);
+        });
+    };
 
     return <div className={classes.contacts}>
-        <FontAwesomeIcon icon={faBars} size="2x" className={classes.faBars} />
+        <FontAwesomeIcon icon={faBars} size="2x" className={classes.faBars} onClick={barBtnHandler} />
+        <div>
+            <Menu id="simple-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={barBtnCloseHandler}>
+                <MenuItem onClick={logoutBtnHandler}>로그아웃</MenuItem>
+            </Menu>
+        </div>
         <Typography variant={"h4"} className={classes.listTitle}>
             채팅 목록
         </Typography>

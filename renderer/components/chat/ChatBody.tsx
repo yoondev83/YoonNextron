@@ -6,6 +6,8 @@ import { faPaperPlane } from '@fortawesome/free-solid-svg-icons'
 import { Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import clsx from 'clsx';
+import { useEffect, useState } from 'react';
+import { getDatabase, ref, onValue, query, set, push } from "firebase/database";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -85,8 +87,8 @@ const useStyles = makeStyles((theme: Theme) =>
             background: "#E3F6FC",
             borderRadius: "1.125rem 1.125rem 1.125rem 0",
             minHeight: "2.25rem",
-            width: "-webkit-fit-content",
-            width: "-moz-fit-content",
+            // width: "-webkit-fit-content",
+            // width: "-moz-fit-content",
             width: "fit-content",
             maxWidth: "66%",
             boxShadow: "0 0 2rem rgba(0, 0, 0, 0.075), 0rem 1rem 1rem -1rem rgba(0, 0, 0, 0.1)",
@@ -100,8 +102,8 @@ const useStyles = makeStyles((theme: Theme) =>
             padding: "0.25rem 1rem",
             borderRadius: "2rem",
             color: "#999",
-            width: "-webkit-fit-content",
-            width: "-moz-fit-content",
+            // width: "-webkit-fit-content",
+            // width: "-moz-fit-content",
             width: "fit-content",
             margin: "0 auto",
         },
@@ -112,8 +114,8 @@ const useStyles = makeStyles((theme: Theme) =>
             padding: "0.25rem 1rem",
             borderRadius: "2rem",
             color: "#999",
-            width: "-webkit-fit-content",
-            width: "-moz-fit-content",
+            // width: "-webkit-fit-content",
+            // width: "-moz-fit-content",
             width: "fit-content",
             margin: "0 auto",
 
@@ -177,6 +179,34 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const ChatBody: React.FC = () => {
     const classes = useStyles({});
+    const [chatMsg, setChatMsg] = useState("");
+    const db = getDatabase();
+    const chatMsgRef = query(ref(db, 'messages/'));
+    let today = new Date();
+    let getTodayDate = today.getMonth() + 1 + "" + today.getDate();
+    let timestamp = +today;
+
+
+    const messageHandler = event => {
+        setChatMsg(event.target.value);
+    };
+    const messageSendHandler = () => {
+        push(ref(db, 'messages/' + getTodayDate), {
+            userEmail: "test@gmail.com",
+            name: "홍길동",
+            message: chatMsg,
+            time: timestamp,
+        });
+
+        setChatMsg("");
+    }
+    useEffect(() => {
+        onValue(chatMsgRef, (snapshot) => {
+            snapshot.forEach((childSnapshot) => {
+                const childData = childSnapshot.val();
+            });
+        });
+    }, []);
     return <div className={classes.chat}>
         <div className={clsx(classes.chatContact, classes.bar)}>
             <div className={clsx(classes.pic, classes.chatUser)}></div>
@@ -195,13 +225,13 @@ const ChatBody: React.FC = () => {
             </Typography>
             <Typography variant={"subtitle1"} color={"secondary"} className={clsx(classes.chatMessage, classes.you)}>
                 안녕하세요! 잘 지내시죠? 👋 <br />
-                <Typography variant={"subtitle1"} color={"secondary"} className={clsx(classes.messageTime)}>
+                <Typography component={"span"} variant={"subtitle1"} color={"secondary"} className={clsx(classes.messageTime)}>
                     12: 56
                 </Typography>
             </Typography>
             <Typography variant={"subtitle1"} color={"secondary"} className={clsx(classes.chatMessage, classes.chatUser)}>
                 네! 잘 지내죠. 어떻게 도와드릴까요?<br />
-                <Typography variant={"subtitle1"} color={"secondary"} className={clsx(classes.messageTime)}>
+                <Typography component={"span"} variant={"subtitle1"} color={"secondary"} className={clsx(classes.messageTime)}>
                     12: 57
                 </Typography>
             </Typography>
@@ -210,8 +240,8 @@ const ChatBody: React.FC = () => {
         <div className={classes.chatInput}>
             <FontAwesomeIcon icon={faFile} className={classes.faIcon} />
             <FontAwesomeIcon icon={faLaugh} className={classes.faIcon} />
-            <input placeholder="Type a new message..." type="text" />
-            <FontAwesomeIcon icon={faPaperPlane} className={clsx(classes.faIcon, classes.sendIcon)} />
+            <input placeholder="Type a new message..." type="text" value={chatMsg} onChange={messageHandler} />
+            <FontAwesomeIcon icon={faPaperPlane} className={clsx(classes.faIcon, classes.sendIcon)} onClick={messageSendHandler} />
         </div>
     </div>
 };
