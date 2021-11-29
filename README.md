@@ -17,8 +17,6 @@
 + React 16.9.49, Next.js 11.1, Electron 15.0, Nextron 7.1, TypeScript 4.4, React-redux 7.2, Redux 4.1, Firebase 9.5
 
 
-피그마로 작업한 것과 시연 영상을 포함하였습니다.
-
 ## Main Features 프로젝트 기능
 1. 데스크탑 웹
 2. Next.js
