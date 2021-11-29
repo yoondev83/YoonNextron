@@ -3,13 +3,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import clsx from 'clsx';
 import { Typography } from '@material-ui/core';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { useDispatch } from 'react-redux';
 import { authActions } from '../../store/authSlice';
 import { getAuth, signOut } from "firebase/auth";
 import { useRouter } from 'next/router';
+
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         contacts: {
@@ -98,7 +99,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-const ChatList: React.FC = () => {
+const ChatList: React.FC<{ chatData: any }> = (props) => {
     const classes = useStyles({});
     const auth = getAuth();
     const dispatch = useDispatch();
@@ -120,6 +121,8 @@ const ChatList: React.FC = () => {
             console.log(error);
         });
     };
+    console.log("리스트");
+    console.log(props.chatData);
 
     return <div className={classes.contacts}>
         <FontAwesomeIcon icon={faBars} size="2x" className={classes.faBars} onClick={barBtnHandler} />
@@ -131,22 +134,24 @@ const ChatList: React.FC = () => {
         <Typography variant={"h4"} className={classes.listTitle}>
             채팅 목록
         </Typography>
-        <div className={classes.contact}>
-            <div className={clsx(classes.pic, classes.user1)}></div>
-            <div className={classes.badge}>
-                14
+        {props.chatData.map(list => (
+            <div className={classes.contact} key={list.uid}>
+                <div className={clsx(classes.pic, classes.user1)}></div>
+                <div className={classes.badge}>
+                    14
+                </div>
+                <div>
+                    <Typography variant={"subtitle1"} className={classes.name}>
+                        {list.name}
+                    </Typography>
+                </div>
+                <div className={classes.message}>
+                    <Typography variant={"subtitle1"}>
+                        네! 잘 지내요. 어떻게...
+                    </Typography>
+                </div>
             </div>
-            <div>
-                <Typography variant={"subtitle1"} className={classes.name}>
-                    이용자 1
-                </Typography>
-            </div>
-            <div className={classes.message}>
-                <Typography variant={"subtitle1"}>
-                    네! 잘 지내요. 어떻게...
-                </Typography>
-            </div>
-        </div>
+        ))}
         <div className={classes.contact}>
             <div className={clsx(classes.pic, classes.stark)}></div>
             <div className={classes.name}>

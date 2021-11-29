@@ -11,7 +11,7 @@ import ScaleLoader from "react-spinners/ScaleLoader";
 import { useRouter } from 'next/router';
 import { useDispatch } from 'react-redux';
 import { authActions } from '../../store/authSlice';
-import { getDatabase, ref, onValue, } from "firebase/database";
+
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
@@ -54,17 +54,6 @@ const SignInForm: React.FC = props => {
     const dispatch = useDispatch();
     const [infoWrong, setInfoWrong] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const db = getDatabase();
-    const starCountRef = ref(db, 'members/');
-    onValue(starCountRef, (snapshot) => {
-        snapshot.forEach((childSnapshot) => {
-            const childKey = childSnapshot.key;
-            const childData = childSnapshot.val();
-        });
-    }, {
-        onlyOnce: true
-    });
-
     const { value: enteredEmail,
         isValid: isEmailValid,
         valueChangeHandler: emailChangeHandler,
@@ -82,13 +71,12 @@ const SignInForm: React.FC = props => {
             return;
         } else {
             signInWithEmailAndPassword(auth, enteredEmail, enteredPass)
-                .then((userCredential) => {
-                    const userUid = userCredential.user.uid;
-                    const userEmail = userCredential.user.email;
-                    localStorage.setItem("userToken", userUid);
+                .then(async (userCredential) => {
+                    // const querySnapshot = await getDocs(collection(db, "users"));
+                    localStorage.setItem("userUid", userCredential.user.uid);
                     dispatch(authActions.logIn({
-                        userToken: localStorage.getItem("userToken"),
-                        userEmail: userEmail.split("@")[0],
+                        userUid: localStorage.getItem("userUid"),
+                        userEmail: userCredential.user.email.split("@")[0],
                     }));
                     router.push("/service/chat");
                 })

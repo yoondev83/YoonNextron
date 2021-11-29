@@ -1,54 +1,63 @@
 import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import ChatMain from "../../components/chat/ChatMain";
 import { authActions } from "../../store/authSlice";
-import { getDatabase, ref, onValue, query, equalTo } from "firebase/database";
-type AuthState = {
-    auth: {
-        isLoggedIn: boolean,
-        userToken: string,
-        userEmail: string,
-    }
-};
+import { getFirestore, where } from "firebase/firestore";
+import { collection, getDocs, query } from "firebase/firestore";
 
-const Chat = () => {
+const Chat = (props) => {
     const router = useRouter();
     const auth = getAuth();
     const dispatch = useDispatch();
-    const userInfo = useSelector<AuthState, any>(state => state.auth);
+    const db = getFirestore();
     useEffect(() => {
-        const db = getDatabase();
-        const topUserPostsRef = query(ref(db, 'members/'));
-        onValue(topUserPostsRef, (snapshot) => {
-            snapshot.forEach((childSnapshot) => {
-                const childKey = childSnapshot.key;
-                const childData = childSnapshot.val().name;
-            });
-        }, {
-            onlyOnce: true
-        });
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const userToken = String(user.getIdTokenResult().then(res => { return res.token }));
+                const userToken = user.uid;
                 dispatch(authActions.logIn({
-                    userToken: userToken,
-                    userEmail: user.email.split("@")[0],
+                    userUid: userToken,
+                    userEmail: user.email,
                 }));
             } else {
-                if (router.pathname === "/service/chat" && localStorage.getItem("userToken").length < 1) {
+                if (localStorage.getItem("userUid")) {
+                    const q = query(collection(db, "users"), where("uid", "==", localStorage.getItem("userUid")));
+                    const querySnapshot = await getDocs(q);
+                    let userEmail;
+                    querySnapshot.forEach((doc) => {
+                        userEmail = doc.data().userEmail;
+                    });
+                    dispatch(authActions.logIn({
+                        userUid: localStorage.getItem("userUid"),
+                        userEmail: userEmail,
+                    }));
+                } else if (router.pathname === "/service/chat" && !localStorage.getItem("userToken")) {
                     router.replace("/members/signin");
                 }
             }
         });
     }, []);
 
-    return <ChatMain />
+    return <ChatMain chatData={props.data} />
 };
 
-
-// Chat.getInitialProps = async props => {
-// }
-
 export default Chat;
+
+export async function getStaticProps() {
+    const db = getFirestore();
+    const querySnapshot = await getDocs(collection(db, "users"));
+    let data = [];
+    const chatData = querySnapshot.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        // console.log(doc.id, " => ", doc.data());
+        data.push(doc.data());
+    });
+    return {
+        props: {
+            data,
+        },
+        revalidate: 1 //해당 초 만큼 
+    };
+
+};

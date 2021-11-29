@@ -5,11 +5,10 @@ import Head from 'next/head';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { theme } from '../lib/theme';
-import type { AppProps } from 'next/app';
-import "../lib/global.css";
 import { wrapper } from '../store';
 import { useDispatch, useSelector } from 'react-redux';
-import { authActions } from '../store/authSlice';
+import type { AppProps } from 'next/app';
+import "../lib/global.css";
 
 export default wrapper.withRedux(function (props: AppProps) {
   type AuthState = {
@@ -21,8 +20,6 @@ export default wrapper.withRedux(function (props: AppProps) {
     }
   };
   const { Component, pageProps } = props;
-  const dispatch = useDispatch();
-  const userInfo = useSelector<AuthState, any>(state => state.auth);
   let firebaseApp;
   const firebaseConfig = {
     databaseURL: "https://yoonnexttron-default-rtdb.firebaseio.com/",
@@ -39,14 +36,12 @@ export default wrapper.withRedux(function (props: AppProps) {
     firebaseApp = initializeApp(firebaseConfig);
   }
 
-
   React.useEffect(() => {
     const jssStyles = document.querySelector('#jss-server-side');
     const auth = getAuth();
     if (jssStyles) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
-
 
   }, []);
 

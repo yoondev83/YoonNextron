@@ -9,7 +9,8 @@ import { useRouter } from 'next/router';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import SignUpDialog from '../layout/SignUpDialog';
 import SuccessMsgDialog from '../layout/SuccessMsgDialog';
-import { getDatabase, ref, set } from "firebase/database";
+import { getFirestore } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -48,7 +49,7 @@ const SignUpForm: React.FC = props => {
     const [infoWrong, setInfoWrong] = useState<boolean>(false);
     const router = useRouter();
     const auth = getAuth();
-    const db = getDatabase();
+    const db = getFirestore();
     const { value: enteredLastName,
         isValid: isLastNameValid,
         valueChangeHandler: lastNameChangeHandler,
@@ -86,10 +87,12 @@ const SignUpForm: React.FC = props => {
                         uid: user.uid
                     }
                     setIsSuccessful(true);
-                    await set(ref(db, 'members/' + userInfo.uid), {
-                        userEmail: userInfo.userEmail,
-                        name: userInfo.name,
-                    });
+                    try {
+                        const docRef = await addDoc(collection(db, "users"), userInfo);
+                        console.log("Document written with ID: ", docRef.id);
+                    } catch (e) {
+                        console.error("Error adding document: ", e);
+                    }
                 })
                 .catch((error) => {
                     const errorCode = error.code;
