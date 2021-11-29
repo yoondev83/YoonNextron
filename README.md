@@ -1,8 +1,8 @@
 # YoonNextron
 
-![Video](https://user-images.githubusercontent.com/85688551/143830691-8d7d1ac8-b3bb-4567-a95f-60620241f7fe.mp4)
+[Video](https://user-images.githubusercontent.com/85688551/143830691-8d7d1ac8-b3bb-4567-a95f-60620241f7fe.mp4)
 
-![Figma](https://github.com/yoondev83/YoonSeoulCrimeFront/files/7616540/Figma_Assignment.pdf)
+[피그마 PDF 파일](https://github.com/yoondev83/YoonSeoulCrimeFront/files/7616540/Figma_Assignment.pdf)
 
 ## 설치 Install
 
