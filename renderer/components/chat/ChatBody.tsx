@@ -6,13 +6,15 @@ import { faPaperPlane } from '@fortawesome/free-solid-svg-icons'
 import { Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import clsx from 'clsx';
-import { useEffect, useState } from 'react';
-import { getDatabase, ref, onValue, query, set, push } from "firebase/database";
+import React, { useEffect, useState } from 'react';
+import { getFirestore, serverTimestamp, addDoc, collection, onSnapshot, doc } from "firebase/firestore";
+import { useAppSelector } from '../../store/authSlice';
+import ChatMessage from './ChatMessage';
+import { UserChatData } from './ChatMain';
+
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
-        center: {
-        },
         chat: {
             position: "absolute",
             display: "flex",
@@ -78,24 +80,9 @@ const useStyles = makeStyles((theme: Theme) =>
             background: "#F7F7F7",
             flexShrink: 2,
             overflowY: "auto",
-            boxShadow: "inset 0 2rem 2rem -2rem rgba(0, 0, 0, 0.05), inset 0 -2rem 2rem -2rem rgba(0, 0, 0, 0.05)"
+            boxShadow: "inset 0 2rem 2rem -2rem rgba(0, 0, 0, 0.05), inset 0 -2rem 2rem -2rem rgba(0, 0, 0, 0.05)",
         },
-        chatMessage: {
-            boxSizing: "border-box",
-            padding: "0.5rem 1rem",
-            margin: "1rem",
-            background: "#E3F6FC",
-            borderRadius: "1.125rem 1.125rem 1.125rem 0",
-            minHeight: "2.25rem",
-            // width: "-webkit-fit-content",
-            // width: "-moz-fit-content",
-            width: "fit-content",
-            maxWidth: "66%",
-            boxShadow: "0 0 2rem rgba(0, 0, 0, 0.075), 0rem 1rem 1rem -1rem rgba(0, 0, 0, 0.1)",
-            fontWeight: 500,
-            color: "#52585D"
 
-        },
         time: {
             fontSize: " 1.2rem",
             background: "#EEE",
@@ -107,25 +94,7 @@ const useStyles = makeStyles((theme: Theme) =>
             width: "fit-content",
             margin: "0 auto",
         },
-        messageTime: {
-            fontSize: " 1.2rem",
-            float: "right",
-            // background: "#EEE",
-            padding: "0.25rem 1rem",
-            borderRadius: "2rem",
-            color: "#999",
-            // width: "-webkit-fit-content",
-            // width: "-moz-fit-content",
-            width: "fit-content",
-            margin: "0 auto",
 
-        },
-        you: {
-            margin: "1rem 1rem 1rem auto",
-            borderRadius: "1.125rem 1.125rem 0 1.125rem",
-            background: "#F3BA4A",
-            color: "#FDFDFE",
-        },
         typing: {
             display: "inline-block",
             width: "0.8rem",
@@ -177,41 +146,50 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-const ChatBody: React.FC = () => {
+const ChatBody: React.FC<{ userData: Array<string>; userChatData: Array<UserChatData> }> = (props) => {
     const classes = useStyles({});
+    const db = getFirestore();
+    const { userEmail, userName, userUid } = useAppSelector(state => state.auth);
     const [chatMsg, setChatMsg] = useState("");
-    const db = getDatabase();
-    const chatMsgRef = query(ref(db, 'messages/'));
-    let today = new Date();
-    let getTodayDate = today.getMonth() + 1 + "" + today.getDate();
-    let timestamp = +today;
-
-
+    const [allMessages, setAllMessages] = useState([]);
+    let nowDate = new Date().toISOString().replace("T", " ").replace(/\..*/, '');
+    const unsub = onSnapshot(doc(db, "messages", "SF"), (doc) => {
+        console.log("Current data: ", doc.data());
+    });
     const messageHandler = event => {
         setChatMsg(event.target.value);
     };
-    const messageSendHandler = () => {
-        push(ref(db, 'messages/' + getTodayDate), {
-            userEmail: "test@gmail.com",
-            name: "홍길동",
+    const messageSendHandler = async event => {
+        event.preventDefault();
+        const userMessage = {
+            userEmail,
+            name: userName,
             message: chatMsg,
-            time: timestamp,
-        });
-
+            Timestamp: serverTimestamp(),
+        }
+        try {
+            const docRef = await addDoc(collection(db, "messages"), userMessage);
+            console.log("Document written with ID: ", docRef.id);
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
+        setAllMessages([...allMessages, {
+            userEmail,
+            name: userName,
+            message: chatMsg,
+            time: nowDate,
+        }]);
         setChatMsg("");
     }
     useEffect(() => {
-        onValue(chatMsgRef, (snapshot) => {
-            snapshot.forEach((childSnapshot) => {
-                const childData = childSnapshot.val();
-            });
-        });
+        setAllMessages(props.userChatData);
     }, []);
+
     return <div className={classes.chat}>
         <div className={clsx(classes.chatContact, classes.bar)}>
             <div className={clsx(classes.pic, classes.chatUser)}></div>
             <Typography variant={"subtitle1"} color={"secondary"} className={classes.name}>
-                이용자1
+                {userName}
             </Typography>
             <Typography variant={"subtitle1"} color={"secondary"} className={classes.seen}>
                 Today at 12: 56
@@ -223,18 +201,14 @@ const ChatBody: React.FC = () => {
             <Typography variant={"subtitle1"} color={"secondary"} className={classes.time}>
                 오늘 12: 56
             </Typography>
-            <Typography variant={"subtitle1"} color={"secondary"} className={clsx(classes.chatMessage, classes.you)}>
-                안녕하세요! 잘 지내시죠? 👋 <br />
-                <Typography component={"span"} variant={"subtitle1"} color={"secondary"} className={clsx(classes.messageTime)}>
-                    12: 56
-                </Typography>
-            </Typography>
-            <Typography variant={"subtitle1"} color={"secondary"} className={clsx(classes.chatMessage, classes.chatUser)}>
+            {allMessages.map(msgData => <ChatMessage userChatData={msgData} />)}
+
+            {/* <Typography variant={"subtitle1"} color={"secondary"} className={clsx(classes.chatMessage, classes.chatUser)}>
                 네! 잘 지내죠. 어떻게 도와드릴까요?<br />
                 <Typography component={"span"} variant={"subtitle1"} color={"secondary"} className={clsx(classes.messageTime)}>
                     12: 57
                 </Typography>
-            </Typography>
+            </Typography> */}
 
         </Grid>
         <div className={classes.chatInput}>

@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 import { authActions } from '../../store/authSlice';
 import { getAuth, signOut } from "firebase/auth";
 import { useRouter } from 'next/router';
+import UserContact from './UserContact';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -26,6 +27,10 @@ const useStyles = makeStyles((theme: Theme) =>
             transition: "transform 500ms",
             fontFamily: "TMONTium",
             fontSize: "1.4rem",
+        },
+        clickedContact: {
+            background: "#b2e7f7",
+            color: "black"
         },
         listTitle: {
             margin: "0.2rem 0 1.5rem 7rem",
@@ -50,48 +55,7 @@ const useStyles = makeStyles((theme: Theme) =>
             flexDirection: "column",
             justifyContent: "center",
         },
-        contactPic: {
-            position: "absolute",
-            left: 0,
-            width: 1000
-        },
-        name: {
-            fontWeight: "bold",
-        },
-        message: {
-            fontSize: "1.1rem",
-            color: "#999",
-        },
-        seen: {
-            fontSize: "0.9rem",
-            color: "#999",
-        },
-        badge: {
-            boxSizing: "border-box",
-            position: "absolute",
-            width: "1.5rem",
-            height: "1.5rem",
-            textAlign: "center",
-            fontSize: "0.9rem",
-            paddingTop: "0.125rem",
-            borderRadius: "1rem",
-            top: 0,
-            left: "2.5rem",
-            background: "#333",
-            color: "white",
-        },
-        pic: {
-            width: "4rem",
-            height: "4rem",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            borderRadius: "50%",
-            position: "absolute",
-            left: 0
-        },
-        user1: {
-            backgroundImage: `url(${"https://vignette.wikia.nocookie.net/marvelcinematicuniverse/images/7/7c/Cap.America_%28We_Don%27t_Trade_Lives_Vision%29.png"})`,
-        },
+
         stark: {
             backgroundImage: `url(${"/images/user1.png"})`,
         },
@@ -99,17 +63,26 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-const ChatList: React.FC<{ chatData: any }> = (props) => {
+const ChatList: React.FC<{ userData: any }> = (props) => {
     const classes = useStyles({});
     const auth = getAuth();
     const dispatch = useDispatch();
     const router = useRouter();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [isContactClicked, setIsContactClicked] = useState<boolean>(false);
+    const [selectedUid, setSelectedUid] = useState<string>("");
+    const selectedContact = clsx(classes.contact, classes.clickedContact);
+
+
     const barBtnHandler = (event: React.MouseEvent<any>) => {
         setAnchorEl(event.currentTarget);
     };
     const barBtnCloseHandler = () => {
         setAnchorEl(null);
+    };
+    const contactClickHandler = (uid) => {
+        setIsContactClicked(true);
+        setSelectedUid(uid);
     };
     const logoutBtnHandler = () => {
         setAnchorEl(null);
@@ -121,8 +94,6 @@ const ChatList: React.FC<{ chatData: any }> = (props) => {
             console.log(error);
         });
     };
-    console.log("리스트");
-    console.log(props.chatData);
 
     return <div className={classes.contacts}>
         <FontAwesomeIcon icon={faBars} size="2x" className={classes.faBars} onClick={barBtnHandler} />
@@ -134,25 +105,10 @@ const ChatList: React.FC<{ chatData: any }> = (props) => {
         <Typography variant={"h4"} className={classes.listTitle}>
             채팅 목록
         </Typography>
-        {props.chatData.map(list => (
-            <div className={classes.contact} key={list.uid}>
-                <div className={clsx(classes.pic, classes.user1)}></div>
-                <div className={classes.badge}>
-                    14
-                </div>
-                <div>
-                    <Typography variant={"subtitle1"} className={classes.name}>
-                        {list.name}
-                    </Typography>
-                </div>
-                <div className={classes.message}>
-                    <Typography variant={"subtitle1"}>
-                        네! 잘 지내요. 어떻게...
-                    </Typography>
-                </div>
-            </div>
+        {props.userData.map(list => (
+            <UserContact userData={list} contactClass={selectedUid === list.uid ? selectedContact : classes.contact} contactClickHandler={contactClickHandler} />
         ))}
-        <div className={classes.contact}>
+        {/* <div className={classes.contact}>
             <div className={clsx(classes.pic, classes.stark)}></div>
             <div className={classes.name}>
                 <Typography variant={"subtitle1"}>
@@ -162,7 +118,7 @@ const ChatList: React.FC<{ chatData: any }> = (props) => {
             <div className={classes.message}>
                 Uh, he's from space, he came here to steal a necklace from a wizard.
             </div>
-        </div>
+        </div> */}
     </div>
 }
 

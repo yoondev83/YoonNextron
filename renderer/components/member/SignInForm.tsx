@@ -72,11 +72,11 @@ const SignInForm: React.FC = props => {
         } else {
             signInWithEmailAndPassword(auth, enteredEmail, enteredPass)
                 .then(async (userCredential) => {
-                    // const querySnapshot = await getDocs(collection(db, "users"));
                     localStorage.setItem("userUid", userCredential.user.uid);
                     dispatch(authActions.logIn({
                         userUid: localStorage.getItem("userUid"),
-                        userEmail: userCredential.user.email.split("@")[0],
+                        userEmail: userCredential.user.email,
+                        userName: "",
                     }));
                     router.push("/service/chat");
                 })
@@ -91,7 +91,6 @@ const SignInForm: React.FC = props => {
         }
         resetEmailInput();
         resetPasswordInput();
-        setIsLoading(false);
     }
 
     return <Grid container spacing={0} direction="row" alignItems="center" justifyContent="space-around" className={classes.root}>

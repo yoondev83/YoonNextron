@@ -1,17 +1,25 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { TypedUseSelectorHook, useSelector } from 'react-redux';
+
+export interface RootState {
+    auth: AuthState,
+};
 type AuthState = {
     isLoggedIn: boolean;
     userUid: string;
     userEmail: string;
+    userName: string;
 };
 type AuthPayload = {
     userUid: string;
     userEmail: string;
+    userName: string;
 };
 const initialState: AuthState = {
     isLoggedIn: false,
     userUid: "",
     userEmail: "",
+    userName: "",
 }
 
 const authSlice = createSlice({
@@ -19,14 +27,16 @@ const authSlice = createSlice({
     initialState: initialState,
     reducers: {
         logIn(state: AuthState, action: PayloadAction<AuthPayload>) {
-            state.isLoggedIn = true;
-            state.userUid = action.payload.userUid;
-            state.userEmail = action.payload.userEmail;
+            state.isLoggedIn = true,
+                state.userUid = action.payload.userUid,
+                state.userEmail = action.payload.userEmail,
+                state.userName = action.payload.userName
         },
         logOut(state: AuthState) {
-            state.isLoggedIn = false;
-            state.userUid = "",
-                state.userEmail = ""
+            state.isLoggedIn = false,
+                state.userUid = "",
+                state.userEmail = "",
+                state.userName = ""
         },
     },
 });
@@ -34,3 +44,4 @@ const authSlice = createSlice({
 
 export const authActions = authSlice.actions;
 export default authSlice.reducer;
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
