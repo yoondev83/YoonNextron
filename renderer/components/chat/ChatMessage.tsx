@@ -2,7 +2,8 @@ import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
 import clsx from 'clsx';
 import { UserChatData } from './ChatMain';
-
+import { useAppSelector } from '../../store';
+import Grid from '@material-ui/core/Grid';
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         chatMessage: {
@@ -12,8 +13,6 @@ const useStyles = makeStyles((theme: Theme) =>
             background: "#E3F6FC",
             borderRadius: "1.125rem 1.125rem 1.125rem 0",
             minHeight: "2.25rem",
-            // width: "-webkit-fit-content",
-            // width: "-moz-fit-content",
             width: "fit-content",
             maxWidth: "66%",
             boxShadow: "0 0 2rem rgba(0, 0, 0, 0.075), 0rem 1rem 1rem -1rem rgba(0, 0, 0, 0.1)",
@@ -34,8 +33,6 @@ const useStyles = makeStyles((theme: Theme) =>
             padding: "0.25rem 1rem",
             borderRadius: "2rem",
             color: "#999",
-            // width: "-webkit-fit-content",
-            // width: "-moz-fit-content",
             width: "fit-content",
             margin: "0 auto",
 
@@ -45,14 +42,16 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const ChatMessage: React.FC<{ userChatData: UserChatData }> = ({ userChatData }) => {
     const classes = useStyles({});
-    return <>
-        <Typography variant={"subtitle1"} color={"secondary"} className={clsx(classes.chatMessage, classes.you)}>
+    const { userName } = useAppSelector(state => state.auth);
+    let messageClass = userName === userChatData.name ? clsx(classes.chatMessage, classes.you) : clsx(classes.chatMessage)
+    return <Grid item md={12} sm={12} xs={12}>
+        <Typography variant={"subtitle1"} color={"secondary"} className={messageClass}>
             {userChatData.message} <br />
             <Typography component={"span"} variant={"subtitle1"} color={"secondary"} className={clsx(classes.messageTime)}>
-                {userChatData.time}
+                {userChatData.time.substring(11, 16)}
             </Typography>
         </Typography>
-    </>
+    </Grid>
 
 }
 

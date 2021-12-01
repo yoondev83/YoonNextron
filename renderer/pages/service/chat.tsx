@@ -5,7 +5,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import ChatMain from "../../components/chat/ChatMain";
 import { authActions } from "../../store/authSlice";
 import { getFirestore, where } from "firebase/firestore";
-import { collection, getDocs, query } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, doc } from "firebase/firestore";
 
 const Chat = (props) => {
     const router = useRouter();
@@ -22,7 +22,6 @@ const Chat = (props) => {
             const q = query(collection(db, "users"), where("uid", "==", localStorage.getItem("userUid")));
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
-                console.log(doc.data());
                 userEmail = doc.data().userEmail;
                 userName = doc.data().name;
             });
@@ -57,12 +56,15 @@ export default Chat;
 
 export async function getStaticProps() {
     const db = getFirestore();
+    const chatRef = collection(db, "messages");
+    const chatQuery = query(chatRef, orderBy("Timestamp"));
     const queryUserSnapshot = await getDocs(collection(db, "users"));
-    const queryChatSnapshot = await getDocs(collection(db, "messages"));
+    const queryChatSnapshot = await getDocs(chatQuery);
     let userListData = [];
     let userChatData: Array<{
         userEmail: string,
         name: string,
+        receiver: string,
         message: string,
         time: string
     }> = [];
@@ -75,7 +77,8 @@ export async function getStaticProps() {
                 userEmail: doc.data().userEmail,
                 name: doc.data().name,
                 message: doc.data().message,
-                time: new Date(doc.data().Timestamp.seconds * 1000).toISOString().replace("T", " ").replace(/\..*/, '')
+                receiver: doc.data().receiver,
+                time: new Date(doc.data().Timestamp.seconds * 1000.0197775).toISOString().replace("T", " ").replace(/\..*/, '')
             }
         );
     });

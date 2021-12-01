@@ -4,6 +4,7 @@ import ChatList from './ChatList';
 export type UserChatData = {
     userEmail: string,
     name: string,
+    receiver: string,
     message: string,
     time: string
 }

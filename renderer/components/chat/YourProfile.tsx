@@ -1,4 +1,4 @@
-import { Grid, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 const useStyles = makeStyles((theme: Theme) =>
@@ -70,38 +70,27 @@ const useStyles = makeStyles((theme: Theme) =>
             left: 0
         },
         user1: {
-            backgroundImage: `url(${"/images/user1.png"})`,
-            // backgroundImage: `url(${"https://vignette.wikia.nocookie.net/marvelcinematicuniverse/images/7/7c/Cap.America_%28We_Don%27t_Trade_Lives_Vision%29.png"})`,
+            backgroundImage: `url(${"https://vignette.wikia.nocookie.net/marvelcinematicuniverse/images/7/7c/Cap.America_%28We_Don%27t_Trade_Lives_Vision%29.png"})`,
         },
 
     })
 );
 
-const UserContact: React.FC<{ userData: any; contactClass: string; contactClickHandler: (userInfo: { uid: any; name: any; }) => void }> = props => {
+const YourProfile: React.FC<{ yourData: any; contactClass: string; }> = props => {
     const classes = useStyles({});
-    const userInfo = {
-        uid: props.userData.uid,
-        name: props.userData.name
-    }
-
-    return <Grid>
-        <div className={props.contactClass} key={props.userData.uid} onClick={e => props.contactClickHandler(userInfo)}>
-            <div className={clsx(classes.pic, classes.user1)}></div>
-            {/* <div className={classes.badge}>
-                {props.userData.length}
-            </div> */}
-            <div>
-                <Typography variant={"subtitle1"} className={classes.name}>
-                    {props.userData.name}
-                </Typography>
-            </div>
-            <div className={classes.message}>
-                <Typography variant={"subtitle1"}>
-                    네! 잘 지내요. 어떻게...
-                </Typography>
-            </div>
+    return <div className={props.contactClass} key={props.yourData.uid}>
+        <div className={clsx(classes.pic, classes.user1)}></div>
+        <div>
+            <Typography variant={"subtitle1"} className={classes.name}>
+                {props.yourData} (You)
+            </Typography>
         </div>
-    </Grid>
+        <div className={classes.message}>
+            {/* <Typography variant={"subtitle1"}>
+                네! 잘 지내요. 어떻게...
+            </Typography> */}
+        </div>
+    </div>
 };
 
-export default UserContact;
+export default YourProfile;

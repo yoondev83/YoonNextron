@@ -2,8 +2,8 @@ import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import clsx from 'clsx';
-import { Typography } from '@material-ui/core';
-import { useEffect, useState } from 'react';
+import { Grid, Typography } from '@material-ui/core';
+import { useState } from 'react';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { useDispatch } from 'react-redux';
@@ -11,6 +11,9 @@ import { authActions } from '../../store/authSlice';
 import { getAuth, signOut } from "firebase/auth";
 import { useRouter } from 'next/router';
 import UserContact from './UserContact';
+import YourProfile from './YourProfile';
+import { useAppSelector } from '../../store';
+import { chatActions } from '../../store/chatSlice';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -18,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) =>
             position: "absolute",
             width: "16.7%",
             height: "100%",
-            padding: "1rem 2rem 1rem 1rem",
+            padding: "1rem 2rem 1rem 0.2rem",
             boxSizing: "border-box",
             borderRadius: "1rem 0 0 1rem",
             cursor: "pointer",
@@ -55,7 +58,14 @@ const useStyles = makeStyles((theme: Theme) =>
             flexDirection: "column",
             justifyContent: "center",
         },
-
+        simpleHr: {
+            border: 0,
+            height: "1px",
+            backgroundImage: "linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0))",
+        },
+        listGrid: {
+            padding: 0
+        },
         stark: {
             backgroundImage: `url(${"/images/user1.png"})`,
         },
@@ -71,6 +81,7 @@ const ChatList: React.FC<{ userData: any }> = (props) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [isContactClicked, setIsContactClicked] = useState<boolean>(false);
     const [selectedUid, setSelectedUid] = useState<string>("");
+    const { userName, userUid } = useAppSelector(state => state.auth);
     const selectedContact = clsx(classes.contact, classes.clickedContact);
 
 
@@ -80,12 +91,18 @@ const ChatList: React.FC<{ userData: any }> = (props) => {
     const barBtnCloseHandler = () => {
         setAnchorEl(null);
     };
-    const contactClickHandler = (uid) => {
+    const contactClickHandler = (userInfo: { uid: any; name: any; }) => {
         setIsContactClicked(true);
-        setSelectedUid(uid);
+        setSelectedUid(userInfo.uid);
+        dispatch(chatActions.passUid({
+            selectedUid: userInfo.uid,
+            selectedUserName: userInfo.name,
+        }));
+
     };
     const logoutBtnHandler = () => {
         setAnchorEl(null);
+        dispatch(chatActions.logout);
         dispatch(authActions.logOut);
         localStorage.clear();
         signOut(auth).then(() => {
@@ -105,20 +122,14 @@ const ChatList: React.FC<{ userData: any }> = (props) => {
         <Typography variant={"h4"} className={classes.listTitle}>
             채팅 목록
         </Typography>
-        {props.userData.map(list => (
-            <UserContact userData={list} contactClass={selectedUid === list.uid ? selectedContact : classes.contact} contactClickHandler={contactClickHandler} />
-        ))}
-        {/* <div className={classes.contact}>
-            <div className={clsx(classes.pic, classes.stark)}></div>
-            <div className={classes.name}>
-                <Typography variant={"subtitle1"}>
-                    Tony Stark
-                </Typography>
-            </div>
-            <div className={classes.message}>
-                Uh, he's from space, he came here to steal a necklace from a wizard.
-            </div>
-        </div> */}
+        <YourProfile key={userUid} yourData={userName} contactClass={selectedUid === userUid ? selectedContact : classes.contact} />
+        <hr className={classes.simpleHr} />
+        <Grid container spacing={0} className={classes.listGrid}>
+            {props.userData.map(list => (
+                list.uid !== userUid &&
+                <UserContact key={list.uid} userData={list} contactClass={selectedUid === list.uid ? selectedContact : classes.contact} contactClickHandler={contactClickHandler} />
+            ))}
+        </Grid>
     </div>
 }
 

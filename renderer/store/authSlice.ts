@@ -1,10 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { TypedUseSelectorHook, useSelector } from 'react-redux';
 
-export interface RootState {
-    auth: AuthState,
-};
-type AuthState = {
+
+export type AuthState = {
     isLoggedIn: boolean;
     userUid: string;
     userEmail: string;
@@ -41,7 +38,5 @@ const authSlice = createSlice({
     },
 });
 
-
 export const authActions = authSlice.actions;
 export default authSlice.reducer;
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector

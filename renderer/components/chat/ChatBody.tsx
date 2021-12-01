@@ -7,14 +7,20 @@ import { Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import clsx from 'clsx';
 import React, { useEffect, useState } from 'react';
-import { getFirestore, serverTimestamp, addDoc, collection, onSnapshot, doc } from "firebase/firestore";
-import { useAppSelector } from '../../store/authSlice';
+import { getFirestore, serverTimestamp, addDoc, collection } from "firebase/firestore";
+import { useAppSelector } from '../../store';
 import ChatMessage from './ChatMessage';
 import { UserChatData } from './ChatMain';
+import { useDispatch } from 'react-redux';
+import { chatActions } from '../../store/chatSlice';
 
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
+        root: {
+            textAlign: 'center',
+            paddingTop: theme.spacing(25),
+        },
         chat: {
             position: "absolute",
             display: "flex",
@@ -79,7 +85,8 @@ const useStyles = makeStyles((theme: Theme) =>
             height: "100%",
             background: "#F7F7F7",
             flexShrink: 2,
-            overflowY: "auto",
+            // overflowY: "auto",
+            overflowY: "scroll",
             boxShadow: "inset 0 2rem 2rem -2rem rgba(0, 0, 0, 0.05), inset 0 -2rem 2rem -2rem rgba(0, 0, 0, 0.05)",
         },
 
@@ -149,22 +156,27 @@ const useStyles = makeStyles((theme: Theme) =>
 const ChatBody: React.FC<{ userData: Array<string>; userChatData: Array<UserChatData> }> = (props) => {
     const classes = useStyles({});
     const db = getFirestore();
+    const dispatch = useDispatch();
     const { userEmail, userName, userUid } = useAppSelector(state => state.auth);
+    const { selectedUid, selectedUserName } = useAppSelector(state => state.chat);
     const [chatMsg, setChatMsg] = useState("");
     const [allMessages, setAllMessages] = useState([]);
-    let nowDate = new Date().toISOString().replace("T", " ").replace(/\..*/, '');
-    const unsub = onSnapshot(doc(db, "messages", "SF"), (doc) => {
-        console.log("Current data: ", doc.data());
-    });
+    const date = new Date();
+    let nowTime = "00000000000" + date.getHours() + ":" + date.getMinutes()
     const messageHandler = event => {
         setChatMsg(event.target.value);
     };
-    const messageSendHandler = async event => {
+
+    const messageSendHandler = async (event: any) => {
         event.preventDefault();
+        if (chatMsg === "") {
+            return;
+        }
         const userMessage = {
             userEmail,
             name: userName,
             message: chatMsg,
+            receiver: selectedUid,
             Timestamp: serverTimestamp(),
         }
         try {
@@ -177,47 +189,60 @@ const ChatBody: React.FC<{ userData: Array<string>; userChatData: Array<UserChat
             userEmail,
             name: userName,
             message: chatMsg,
-            time: nowDate,
+            receiver: selectedUid,
+            time: nowTime,
         }]);
         setChatMsg("");
     }
+    const messageEnterHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            messageSendHandler(event);
+        }
+    };
+
     useEffect(() => {
         setAllMessages(props.userChatData);
-    }, []);
+        dispatch(chatActions.logout());
+    }, [dispatch]);
 
-    return <div className={classes.chat}>
-        <div className={clsx(classes.chatContact, classes.bar)}>
-            <div className={clsx(classes.pic, classes.chatUser)}></div>
-            <Typography variant={"subtitle1"} color={"secondary"} className={classes.name}>
-                {userName}
-            </Typography>
-            <Typography variant={"subtitle1"} color={"secondary"} className={classes.seen}>
-                Today at 12: 56
-            </Typography>
-        </div>
-
-        <Grid container spacing={0} direction="column" alignItems="stretch" justifyContent="flex-end" className={classes.chatMessages}>
-            {/* <div className={classes.chatMessages} id="chat"> */}
-            <Typography variant={"subtitle1"} color={"secondary"} className={classes.time}>
-                오늘 12: 56
-            </Typography>
-            {allMessages.map(msgData => <ChatMessage userChatData={msgData} />)}
-
-            {/* <Typography variant={"subtitle1"} color={"secondary"} className={clsx(classes.chatMessage, classes.chatUser)}>
-                네! 잘 지내죠. 어떻게 도와드릴까요?<br />
-                <Typography component={"span"} variant={"subtitle1"} color={"secondary"} className={clsx(classes.messageTime)}>
-                    12: 57
+    return selectedUid === "" ?
+        <Grid container spacing={0} direction="row" alignItems="center" justifyContent="center" >
+            <div className={classes.root}>
+                <img src="/images/logo.png" alt="logo" />
+                <Typography variant={"h1"} color={"primary"} >
+                    대화 상대를 선택해주세요.
                 </Typography>
-            </Typography> */}
+            </div>
+        </Grid> :
 
-        </Grid>
-        <div className={classes.chatInput}>
-            <FontAwesomeIcon icon={faFile} className={classes.faIcon} />
-            <FontAwesomeIcon icon={faLaugh} className={classes.faIcon} />
-            <input placeholder="Type a new message..." type="text" value={chatMsg} onChange={messageHandler} />
-            <FontAwesomeIcon icon={faPaperPlane} className={clsx(classes.faIcon, classes.sendIcon)} onClick={messageSendHandler} />
+        <div className={classes.chat}>
+            <div className={clsx(classes.chatContact, classes.bar)}>
+                <div className={clsx(classes.pic, classes.chatUser)}></div>
+                <Typography variant={"subtitle1"} color={"secondary"} className={classes.name}>
+                    {selectedUserName}
+                </Typography>
+                <Typography variant={"subtitle1"} color={"secondary"} className={classes.seen}>
+                    Today at 12: 56
+                </Typography>
+            </div>
+
+            <Grid container spacing={0} direction="row" alignItems="flex-end" justifyContent="flex-start" className={classes.chatMessages}>
+                {/* <div className={classes.chatMessages} id="chat"> */}
+                <Typography variant={"subtitle1"} color={"secondary"} className={classes.time}>
+                    대화시작
+                </Typography>
+                {allMessages.filter(filteredMsg => { return filteredMsg.receiver === userUid || filteredMsg.receiver === selectedUid })
+                    .map(msgData => <ChatMessage userChatData={msgData} key={msgData.time + Math.random() * 10} />)}
+
+            </Grid>
+            <div className={classes.chatInput}>
+                <FontAwesomeIcon icon={faFile} className={classes.faIcon} />
+                <FontAwesomeIcon icon={faLaugh} className={classes.faIcon} />
+                <input placeholder="Type a new message..." type="text" value={chatMsg} onChange={messageHandler} onKeyPress={messageEnterHandler} />
+                <FontAwesomeIcon icon={faPaperPlane} className={clsx(classes.faIcon, classes.sendIcon)} onClick={messageSendHandler} />
+            </div>
         </div>
-    </div>
+
 };
 
 export default ChatBody;
