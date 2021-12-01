@@ -1,8 +1,12 @@
 # YoonNextron
 
-[Video](https://user-images.githubusercontent.com/85688551/143830691-8d7d1ac8-b3bb-4567-a95f-60620241f7fe.mp4)
+[Video](https://user-images.githubusercontent.com/85688551/144243759-3340aa34-9643-4c5f-b0bd-8d83f3b147dd.mp4)
 
-[피그마 PDF 파일](https://github.com/yoondev83/YoonSeoulCrimeFront/files/7616540/Figma_Assignment.pdf)
+[피그마 PDF 파일](https://github.com/yoondev83/YoonNextron/files/7634231/Figma_Assignment.pdf)
+
+## Introduction 프로젝트 개요
+이 프로젝트는 Nextron.js (Electron.js + Next.js)를 바탕으로 한 데스크탑 웹 채팅 소프트웨어 입니다. DB는 Firebase를 사용하였습니다. 지속적으로 구현하지 못한 부분들은 업데이트를 통해서 개선해 가도록 하겠습니다!
+
 
 ## 설치 Install
 
@@ -22,21 +26,23 @@
 2. Next.js
 3. 로그인 및 회원가입
 4. Firebase 연동
+5. 1:1 채팅 가능
 
 ### Coming Soon
-1. Firebase 토큰 활용
-2. 전체 유저 목록 불러오기
-3. 1:1 채팅
-4. 그룹채팅
-5. 이용자 상태 변경
-6. 이용자 사진 등록
-7. OAuth 추가
+0. 데이터 실시간 연동
+1. 그룹채팅
+2. 이용자 상태 변경
+3. 이용자 사진 등록
+4. OAuth 추가
         
 
 ```
 📦 
-
-├─ Figma_Assignment.pdf
+├─ .gitignore
+├─ .vscode
+│  ├─ launch.json
+│  └─ tasks.json
+├─ Figma_Assignment.pdf
 ├─ README.md
 ├─ electron-builder.yml
 ├─ main
@@ -57,7 +63,9 @@
 │  │  ├─ chat
 │  │  │  ├─ ChatBody.tsx
 │  │  │  ├─ ChatList.tsx
-│  │  │  └─ ChatMain.tsx
+│  │  │  ├─ ChatMain.tsx
+│  │  │  ├─ ChatMessage.tsx
+│  │  │  └─ UserContact.tsx
 │  │  ├─ hooks
 │  │  │  └─ use-input.tsx
 │  │  ├─ layout
