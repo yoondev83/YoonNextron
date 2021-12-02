@@ -1,3 +1,4 @@
+import { Timestamp } from '@firebase/firestore';
 import Grid from '@material-ui/core/Grid';
 import ChatBody from './ChatBody';
 import ChatList from './ChatList';
@@ -6,7 +7,7 @@ export type UserChatData = {
     name: string,
     receiver: string,
     message: string,
-    time: string
+    time: Timestamp,
 }
 const ChatMain: React.FC<{ userData: Array<string>; userChatData: Array<UserChatData> }> = (props) => {
 

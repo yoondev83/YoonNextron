@@ -6,8 +6,8 @@ import { faPaperPlane } from '@fortawesome/free-solid-svg-icons'
 import { Typography } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import clsx from 'clsx';
-import React, { useEffect, useState } from 'react';
-import { getFirestore, serverTimestamp, addDoc, collection } from "firebase/firestore";
+import React, { useEffect, useRef, useState } from 'react';
+import { getFirestore, serverTimestamp, addDoc, collection, query, orderBy, onSnapshot, Timestamp } from "firebase/firestore";
 import { useAppSelector } from '../../store';
 import ChatMessage from './ChatMessage';
 import { UserChatData } from './ChatMain';
@@ -161,8 +161,7 @@ const ChatBody: React.FC<{ userData: Array<string>; userChatData: Array<UserChat
     const { selectedUid, selectedUserName } = useAppSelector(state => state.chat);
     const [chatMsg, setChatMsg] = useState("");
     const [allMessages, setAllMessages] = useState([]);
-    const date = new Date();
-    let nowTime = "00000000000" + date.getHours() + ":" + date.getMinutes()
+    const chatBodyRef = useRef<HTMLHeadingElement>(null);
     const messageHandler = event => {
         setChatMsg(event.target.value);
     };
@@ -185,13 +184,6 @@ const ChatBody: React.FC<{ userData: Array<string>; userChatData: Array<UserChat
         } catch (e) {
             console.error("Error adding document: ", e);
         }
-        setAllMessages([...allMessages, {
-            userEmail,
-            name: userName,
-            message: chatMsg,
-            receiver: selectedUid,
-            time: nowTime,
-        }]);
         setChatMsg("");
     }
     const messageEnterHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -199,11 +191,36 @@ const ChatBody: React.FC<{ userData: Array<string>; userChatData: Array<UserChat
             messageSendHandler(event);
         }
     };
+    const chatScrollToBottom = () => {
+        chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    };
 
     useEffect(() => {
-        setAllMessages(props.userChatData);
+        const db = getFirestore();
+        const chatRef = collection(db, "messages");
+        const chatQuery = query(chatRef, orderBy("Timestamp"))
+
+        const unsub = onSnapshot(chatQuery, async (doc) => {
+            const data = await doc.docs.map(doc => (
+                {
+                    ...doc.data(),
+                    userEmail: doc.data().userEmail,
+                    name: doc.data().name,
+                    message: doc.data().message,
+                    receiver: doc.data().receiver,
+                    time: doc.data().Timestamp || Timestamp.now()
+                }));
+
+            setAllMessages(data);
+        });
         dispatch(chatActions.logout());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (chatBodyRef.current) {
+            chatScrollToBottom();
+        }
+    }, [chatBodyRef, allMessages, selectedUid]);
 
     return selectedUid === "" ?
         <Grid container spacing={0} direction="row" alignItems="center" justifyContent="center" >
@@ -215,7 +232,7 @@ const ChatBody: React.FC<{ userData: Array<string>; userChatData: Array<UserChat
             </div>
         </Grid> :
 
-        <div className={classes.chat}>
+        <div className={classes.chat} >
             <div className={clsx(classes.chatContact, classes.bar)}>
                 <div className={clsx(classes.pic, classes.chatUser)}></div>
                 <Typography variant={"subtitle1"} color={"secondary"} className={classes.name}>
@@ -226,7 +243,7 @@ const ChatBody: React.FC<{ userData: Array<string>; userChatData: Array<UserChat
                 </Typography>
             </div>
 
-            <Grid container spacing={0} direction="row" alignItems="flex-end" justifyContent="flex-start" className={classes.chatMessages}>
+            <Grid container spacing={0} direction="row" alignItems="flex-end" justifyContent="flex-start" ref={chatBodyRef} className={classes.chatMessages}>
                 {/* <div className={classes.chatMessages} id="chat"> */}
                 <Typography variant={"subtitle1"} color={"secondary"} className={classes.time}>
                     대화시작
@@ -236,7 +253,7 @@ const ChatBody: React.FC<{ userData: Array<string>; userChatData: Array<UserChat
 
             </Grid>
             <div className={classes.chatInput}>
-                <FontAwesomeIcon icon={faFile} className={classes.faIcon} />
+                <FontAwesomeIcon icon={faFile} className={classes.faIcon} onClick={chatScrollToBottom} />
                 <FontAwesomeIcon icon={faLaugh} className={classes.faIcon} />
                 <input placeholder="Type a new message..." type="text" value={chatMsg} onChange={messageHandler} onKeyPress={messageEnterHandler} />
                 <FontAwesomeIcon icon={faPaperPlane} className={clsx(classes.faIcon, classes.sendIcon)} onClick={messageSendHandler} />

@@ -86,9 +86,9 @@ const YourProfile: React.FC<{ yourData: any; contactClass: string; }> = props =>
             </Typography>
         </div>
         <div className={classes.message}>
-            {/* <Typography variant={"subtitle1"}>
-                네! 잘 지내요. 어떻게...
-            </Typography> */}
+            <Typography variant={"subtitle1"}>
+                나의 상태메시지는 여기에..
+            </Typography>
         </div>
     </div>
 };

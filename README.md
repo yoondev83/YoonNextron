@@ -1,11 +1,11 @@
 # YoonNextron
 
-[Video](https://user-images.githubusercontent.com/85688551/144243759-3340aa34-9643-4c5f-b0bd-8d83f3b147dd.mp4)
+[Video](https://user-images.githubusercontent.com/85688551/144429484-817c969d-571c-4813-874e-7c5a3632588b.mp4)
 
 [피그마 PDF 파일](https://github.com/yoondev83/YoonNextron/files/7634231/Figma_Assignment.pdf)
 
 ## Introduction 프로젝트 개요
-이 프로젝트는 Nextron.js (Electron.js + Next.js)를 바탕으로 한 데스크탑 웹 채팅 소프트웨어 입니다. DB는 Firebase를 사용하였습니다. 지속적으로 구현하지 못한 부분들은 업데이트를 통해서 개선해 가도록 하겠습니다!
+이 프로젝트는 Nextron.js (Electron.js + Next.js)와 TypeScript를 바탕으로 한 데스크탑 웹 채팅 소프트웨어 입니다. DB는 Firebase를 사용하였습니다. 현재 간단한 1:1 채팅 기능까지 구현하였습니다. 구현하지 못한 부분들은 지속적인 업데이트를 통해 개선해 가도록 하겠습니다!
 
 
 ## 설치 Install
@@ -29,11 +29,13 @@
 5. 1:1 채팅 가능
 
 ### Coming Soon
-0. 데이터 실시간 연동
-1. 그룹채팅
-2. 이용자 상태 변경
-3. 이용자 사진 등록
-4. OAuth 추가
+1. 유저별 마지막 메시지 목록에 표시
+2. 안 읽은 메시지 표시
+3. 이용자 상태 변경
+4. 이용자 프로필 사진 등록
+5. 이용자 상태 메시지 등록
+6. 그룹 채팅
+7. 파일 전송
         
 
 ```

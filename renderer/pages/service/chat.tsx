@@ -87,7 +87,7 @@ export async function getStaticProps() {
             userListData,
             userChatData,
         },
-        revalidate: 1 //해당 초 만큼 
+        revalidate: 5 //해당 초 만큼 
     };
 
 };

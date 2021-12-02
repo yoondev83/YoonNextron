@@ -97,7 +97,7 @@ const UserContact: React.FC<{ userData: any; contactClass: string; contactClickH
             </div>
             <div className={classes.message}>
                 <Typography variant={"subtitle1"}>
-                    네! 잘 지내요. 어떻게...
+                    마지막 메시지를 보여주겠...
                 </Typography>
             </div>
         </div>

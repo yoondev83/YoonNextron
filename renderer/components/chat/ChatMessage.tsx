@@ -25,6 +25,7 @@ const useStyles = makeStyles((theme: Theme) =>
             borderRadius: "1.125rem 1.125rem 0 1.125rem",
             background: "#F3BA4A",
             color: "#FDFDFE",
+            textAlign: "right"
         },
         messageTime: {
             fontSize: " 1.2rem",
@@ -43,12 +44,14 @@ const useStyles = makeStyles((theme: Theme) =>
 const ChatMessage: React.FC<{ userChatData: UserChatData }> = ({ userChatData }) => {
     const classes = useStyles({});
     const { userName } = useAppSelector(state => state.auth);
+    const messageDate = new Date(userChatData.time.seconds * 1000.0197775).toISOString().replace("T", " ").replace(/\..*/, '');
     let messageClass = userName === userChatData.name ? clsx(classes.chatMessage, classes.you) : clsx(classes.chatMessage)
+
     return <Grid item md={12} sm={12} xs={12}>
         <Typography variant={"subtitle1"} color={"secondary"} className={messageClass}>
             {userChatData.message} <br />
             <Typography component={"span"} variant={"subtitle1"} color={"secondary"} className={clsx(classes.messageTime)}>
-                {userChatData.time.substring(11, 16)}
+                {messageDate.substring(11, 16)}
             </Typography>
         </Typography>
     </Grid>
